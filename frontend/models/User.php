@@ -3,12 +3,13 @@
 namespace frontend\models;
 
 use Yii;
+use yii\db\ActiveQuery;
 
 class User extends \yii\db\ActiveRecord
 {
     public static function tableName()
     {
-        return 'user';
+        return '{{user}}';
     }
 
     public function rules()
@@ -18,8 +19,8 @@ class User extends \yii\db\ActiveRecord
             [['rate', 'city_id', 'profile_id'], 'integer'],
             [['email', 'name'], 'string', 'max' => 64],
             [['password'], 'string', 'max' => 255],
-            [['city_id'], 'exist', 'skipOnError' => true, 'targetClass' => City::className(), 'targetAttribute' => ['city_id' => 'id']],
-            [['profile_id'], 'exist', 'skipOnError' => true, 'targetClass' => Profile::className(), 'targetAttribute' => ['profile_id' => 'id']],
+            [['city_id'], 'exist', 'skipOnError' => true, 'targetClass' => City::class, 'targetAttribute' => ['city_id' => 'id']],
+            [['profile_id'], 'exist', 'skipOnError' => true, 'targetClass' => Profile::class, 'targetAttribute' => ['profile_id' => 'id']],
         ];
     }
 
@@ -39,63 +40,90 @@ class User extends \yii\db\ActiveRecord
         ];
     }
 
-    public function getAvailableNotificationTypes()
+    public function getAvailableNotificationTypes(): ActiveQuery
     {
-        return $this->hasMany(AvailableNotificationType::className(), ['user_id' => 'id']);
+        return $this->hasMany(AvailableNotificationType::class, ['user_id' => 'id']);
     }
 
-    public function getCity()
+    public function getCity(): ActiveQuery
     {
-        return $this->hasOne(City::className(), ['id' => 'city_id']);
+        return $this->hasOne(City::class, ['id' => 'city_id']);
     }
 
-    public function getFeedbacks()
+//    public function getFeedbacks()
+//    {
+//        return $this->hasMany(Feedback::class, ['user_id' => 'id']);
+//    }
+
+    public function getFiles(): ActiveQuery
     {
-        return $this->hasMany(Feedback::className(), ['user_id' => 'id']);
+        return $this->hasMany(File::class, ['user_id' => 'id']);
     }
 
-    public function getFiles()
+    public function getMassages(): ActiveQuery
     {
-        return $this->hasMany(File::className(), ['user_id' => 'id']);
+        return $this->hasMany(Massage::class, ['sender_id' => 'id']);
     }
 
-    public function getMassages()
+    public function getMassages0(): ActiveQuery
     {
-        return $this->hasMany(Massage::className(), ['sender_id' => 'id']);
+        return $this->hasMany(Massage::class, ['recipient_id' => 'id']);
     }
 
-    public function getMassages0()
+    public function getNotifications(): ActiveQuery
     {
-        return $this->hasMany(Massage::className(), ['recipient_id' => 'id']);
+        return $this->hasMany(Notification::class, ['user_id' => 'id']);
     }
 
-    public function getNotifications()
+    public function getProfile(): ActiveQuery
     {
-        return $this->hasMany(Notification::className(), ['user_id' => 'id']);
+        return $this->hasOne(Profile::class, ['id' => 'profile_id']);
     }
 
-    public function getProfile()
+    public function getResponses(): ActiveQuery
     {
-        return $this->hasOne(Profile::className(), ['id' => 'profile_id']);
+        return $this->hasMany(Response::class, ['user_id' => 'id']);
     }
 
-    public function getResponses()
+    public function getTasks(): ActiveQuery
     {
-        return $this->hasMany(Response::className(), ['user_id' => 'id']);
+        return $this->hasMany(Task::class, ['employer_id' => 'id']);
     }
 
-    public function getTasks()
+    public function getTasks0(): ActiveQuery
     {
-        return $this->hasMany(Task::className(), ['employer_id' => 'id']);
+        return $this->hasMany(Task::class, ['executor_id' => 'id']);
     }
 
-    public function getTasks0()
+    public function getUserCategories(): ActiveQuery
     {
-        return $this->hasMany(Task::className(), ['executor_id' => 'id']);
+        return $this->hasMany(UserCategory::class, ['user_id' => 'id']);
     }
 
-    public function getUserCategories()
+    ///////// custom
+
+    public function getExecutorTasks(): ActiveQuery
     {
-        return $this->hasMany(UserCategory::className(), ['user_id' => 'id']);
+        return $this->hasMany(Task::class, ['executor_id' => 'id']);
+    }
+
+    public function getFeedbacks(): ActiveQuery
+    {
+        return $this->hasMany(Feedback::class, ['user_id' => 'id']);
+    }
+
+    public function getExecutorTasksCount(): int
+    {
+        return $this->getExecutorTasks()->count();
+    }
+
+    public function getFeedBacksCount(): int
+    {
+        return $this->getFeedBacks()->count();
+    }
+
+    public function getCategories(): ActiveQuery
+    {
+        return $this->hasMany(Category::class, ['id' => 'category_id'])->viaTable('user_category', ['user_id' => 'id']);
     }
 }
